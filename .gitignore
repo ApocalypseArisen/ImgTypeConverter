@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Test data
+test/
+test_copy/
+imgconv_backup/
+imgconv_backup_*/
