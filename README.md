@@ -1,0 +1,2 @@
+# ImgTypeConverter
+Convert Image types
