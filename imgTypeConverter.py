@@ -1,4 +1,5 @@
 import argparse
+import fnmatch
 import os
 import sys
 
@@ -21,7 +22,8 @@ arg_parser.add_argument('-f', '--filter', dest='filter', type=str,
     help='specifies the filter (fileformat which you want to be converted to destination file format)')
 arg_parser.add_argument('-s', '--silent', action='store_true', help='disables all prints from the program')
 arg_parser.add_argument('-r', '--recursive', action='store_true',
-    help='enbales entering subdirectories if input given is directory')
+    help='enbales entering subdirectories if input given is directory. \
+          Note this option will skip all paths that match this patern: *imgconv_backup*')
 arg_parser.add_argument('--no-backup', action='store_false', dest='backup',
     help='disables creating backup of converted files (Warning may result in data loss)')
 
@@ -55,6 +57,7 @@ def convert_image(path: str) -> None:
 
 
 def handle_file(filename: str, from_dir: bool = False) -> int:
+    if not SILENT: BAR.next()
     _, type = os.path.splitext(filename)
     type = type.replace('.', '')
     if not from_dir and not type in suported_formats:
@@ -69,19 +72,18 @@ def handle_file(filename: str, from_dir: bool = False) -> int:
     if TYPE != type:
         if not from_dir: log("%s is already of a target file type", TYPE)
         convert_image(filename)
-    
-    if not SILENT: BAR.next()
 
     return 0
 
 
 def handle_dir(dirname: str) -> None:
+
     for file in os.listdir(dirname):
-        if os.path.isdir(os.path.join(dirname, file)) and RECURSION:
-            handle_dir(os.path.join(dirname, file))
+        if os.path.isdir(os.path.join(dirname, file)):
+            if RECURSION and not fnmatch.fnmatch(file, '*imgconv_backup*'):
+                handle_dir(os.path.join(dirname, file))
         else:
-            if os.path.isfile(os.path.join(dirname, file)):
-                handle_file(os.path.join(dirname, file), from_dir=True)
+            handle_file(os.path.join(dirname, file), from_dir=True)
 
 
 def create_backup_dir() -> None:
